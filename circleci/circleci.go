@@ -9,8 +9,9 @@ import (
 	"net/http"
 )
 
+// Build represents a single build from the server
 type Build struct {
-	Outcome string `json:"outcome"`
+	Status string `json:"status"`
 }
 
 // GetLatestBuild will retrieve the latest build from CircleCI

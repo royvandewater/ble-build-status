@@ -36,7 +36,7 @@ func main() {
 		build, err := circleci.GetLatestBuild(username, project)
 		fatalIfErrorf(err, "Failed to get latest build")
 
-		debug("outcome: %s", build.Outcome)
+		debug("status: %s", build.Status)
 		<-time.After(10 * time.Second)
 	}
 }
