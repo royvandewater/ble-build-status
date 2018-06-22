@@ -8,10 +8,19 @@
   revision = "7cb67a40409f4bbd31b6d0e8eb8b662bbdd3e252"
 
 [[projects]]
-  name = "github.com/inconshreveable/mousetrap"
-  packages = ["."]
-  revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
-  version = "v1.0"
+  branch = "master"
+  name = "github.com/paypal/gatt"
+  packages = [
+    ".",
+    "linux",
+    "linux/cmd",
+    "linux/evt",
+    "linux/gioctl",
+    "linux/socket",
+    "linux/util",
+    "xpc"
+  ]
+  revision = "4ae819d591cfc94c496c45deb55928469542beec"
 
 [[projects]]
   branch = "master"
@@ -22,21 +31,9 @@
   ]
   revision = "efeac611681b89806d673dfbd8fc1690ca6bd093"
 
-[[projects]]
-  name = "github.com/spf13/cobra"
-  packages = ["."]
-  revision = "ef82de70bb3f60c65fb8eebacbb2d122ef517385"
-  version = "v0.0.3"
-
-[[projects]]
-  name = "github.com/spf13/pflag"
-  packages = ["."]
-  revision = "583c0c0531f06d5278b7d917446061adc344b5cd"
-  version = "v1.0.1"
-
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3df260fab45194fe25b6285b85305c85d6a1848693fd3467843fe97ff1bb9cec"
+  inputs-digest = "a007014e9fbdd6f4ece2ad1cb138d83afe99dbacbafb8e5318c64913a68ff815"
   solver-name = "gps-cdcl"
   solver-version = 1

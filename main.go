@@ -34,8 +34,10 @@ func main() {
 	project := getEnvOr("BLE_BUILD_STATUS_PROJECT", "clojure-for-the-brave-and-true")
 	ringName := getEnvOr("BLE_BUILD_STATUS_RING_NAME", "esp32-neopixel")
 
-	r := ring.New(ringName)
-	err := r.Connect(10 * time.Second)
+	r, err := ring.New(ringName)
+	fatalIfErrorf(err, "Failed to construct a new ring")
+
+	err = r.Connect(10 * time.Second)
 	fatalIfErrorf(err, "Failed to connect to ring")
 
 	for {

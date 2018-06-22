@@ -12,6 +12,6 @@ type Ring interface {
 }
 
 // New constructs an unconnected ring instance
-func New(localName string) Ring {
+func New(localName string) (Ring, error) {
 	return _NewBLERing(localName)
 }
