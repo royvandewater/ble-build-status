@@ -9,6 +9,39 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/go-ble/ble"
+  packages = [
+    ".",
+    "darwin"
+  ]
+  revision = "7370f1c5787e526512801b4442b79d9fd2ef0645"
+
+[[projects]]
+  name = "github.com/mattn/go-colorable"
+  packages = ["."]
+  revision = "167de6bfdfba052fa6b2d3664c8f5272e23c9072"
+  version = "v0.0.9"
+
+[[projects]]
+  name = "github.com/mattn/go-isatty"
+  packages = ["."]
+  revision = "0360b2af4f38e8d38c7fce2a9f4e702702d73a39"
+  version = "v0.0.3"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/mgutz/ansi"
+  packages = ["."]
+  revision = "9520e82c474b0a04dd04f8a40959027271bab992"
+
+[[projects]]
+  name = "github.com/mgutz/logxi"
+  packages = ["v1"]
+  revision = "aebf8a7d67ab4625e0fd4a665766fef9a709161b"
+  version = "v1"
+
+[[projects]]
+  branch = "master"
   name = "github.com/paypal/gatt"
   packages = [
     ".",
@@ -23,17 +56,26 @@
   revision = "4ae819d591cfc94c496c45deb55928469542beec"
 
 [[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/raff/goble"
-  packages = [
-    ".",
-    "xpc"
-  ]
+  packages = ["xpc"]
   revision = "efeac611681b89806d673dfbd8fc1690ca6bd093"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/sys"
+  packages = ["unix"]
+  revision = "ad87a3a340fa7f3bed189293fbfa7a9b7e021ae1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a007014e9fbdd6f4ece2ad1cb138d83afe99dbacbafb8e5318c64913a68ff815"
+  inputs-digest = "99cac2726be8a768c5d43ebb894d9b921c26a582f15310282e05f6701ff0157a"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -1,82 +1,108 @@
 package ring
 
 import (
+	"context"
 	"fmt"
+	"strings"
 	"time"
 
-	"github.com/paypal/gatt"
-	"github.com/royvandewater/ble-build-status/ring/option"
+	"github.com/go-ble/ble"
+	"github.com/go-ble/ble/darwin"
 )
 
-var _ServiceUUID = gatt.MustParseUUID("2ba75e8a-5b5b-447b-ab9a-b79e21dd64e0")
-var _ColorCharacteristicUUID = gatt.MustParseUUID("08f490bf-28f1-4d55-897d-ab8d74effffb")
-var _CommandCharacteristicUUID = gatt.MustParseUUID("04b29961-90fd-4ee7-bb48-f203bde84f44")
+var _ServiceUUID = ble.MustParse("2ba75e8a-5b5b-447b-ab9a-b79e21dd64e0")
+var _ColorCharacteristicUUID = ble.MustParse("08f490bf-28f1-4d55-897d-ab8d74effffb")
+var _CommandCharacteristicUUID = ble.MustParse("04b29961-90fd-4ee7-bb48-f203bde84f44")
 
 type _BLERing struct {
-	device     gatt.Device
-	localName  string
-	peripheral gatt.Peripheral
+	device                ble.Device
+	localName             string
+	client                ble.Client
+	commandCharacteristic *ble.Characteristic
+	colorCharacteristic   *ble.Characteristic
 }
 
 func _NewBLERing(localName string) (*_BLERing, error) {
-	device, err := gatt.NewDevice(option.DefaultClientOptions...)
+	device, err := darwin.NewDevice()
 	if err != nil {
 		return nil, err
 	}
+	ble.SetDefaultDevice(device)
 
-	ring := &_BLERing{device: device, localName: localName}
-	ring.initialize()
-	return ring, nil
+	return &_BLERing{client: nil, device: device, localName: localName}, nil
 }
 
 func (ring *_BLERing) Connect(timeout time.Duration) error {
-	fmt.Println("Connecting...")
-	err := ring.device.Init(ring.onStateChanged)
+	ctx := ble.WithSigHandler(context.WithTimeout(context.Background(), timeout))
+
+	client, err := ble.Connect(ctx, ring.localNameFilter)
 	if err != nil {
 		return err
 	}
-	ring.device.Scan(nil, false)
+	services, err := client.DiscoverServices([]ble.UUID{_ServiceUUID})
+	if err != nil {
+		return err
+	}
+	if len(services) != 1 {
+		return fmt.Errorf("Expected exactly 1 service, got: %v", services)
+	}
+
+	characteristics, err := client.DiscoverCharacteristics([]ble.UUID{_ColorCharacteristicUUID, _CommandCharacteristicUUID}, services[0])
+	if err != nil {
+		return err
+	}
+	if len(characteristics) != 2 {
+		return fmt.Errorf("Expected exactly 2 servics, got: %v", characteristics)
+	}
+
+	for _, characteristic := range characteristics {
+		if characteristic.UUID.Equal(_ColorCharacteristicUUID) {
+			ring.colorCharacteristic = characteristic
+		}
+		if characteristic.UUID.Equal(_CommandCharacteristicUUID) {
+			ring.commandCharacteristic = characteristic
+		}
+	}
+
+	ring.client = client
 	return nil
 }
 
-func (ring *_BLERing) initialize() {
-	ring.device.Handle(
-		gatt.PeripheralDiscovered(ring.onPeriphDiscovered),
-		gatt.PeripheralConnected(ring.onPeriphConnected),
-		gatt.PeripheralDisconnected(ring.onPeriphDisconnected),
-	)
-}
-
-func (ring *_BLERing) onPeriphDiscovered(p gatt.Peripheral, a *gatt.Advertisement, rssi int) {
-	if p.ID() != ring.localName {
-		return
-	}
-	fmt.Println("Found it, connecting!")
-
-	p.Device().StopScanning()
-	p.Device().Connect(p)
-}
-
-func (ring *_BLERing) onPeriphConnected(p gatt.Peripheral, err error) {
-	if err := p.SetMTU(500); err != nil {
-		fmt.Printf("Failed to set MTU, err: %s\n", err)
-		return
+func (ring *_BLERing) Disconnect() error {
+	if ring.client == nil {
+		return nil
 	}
 
-	fmt.Println("Connected")
-	ring.peripheral = p
+	return ring.client.CancelConnection()
 }
 
-func (ring *_BLERing) onPeriphDisconnected(p gatt.Peripheral, err error) {
-}
-
-func (ring *_BLERing) onStateChanged(d gatt.Device, s gatt.State) {
-	fmt.Println("state change", s)
-	switch s {
-	case gatt.StatePoweredOn:
-		ring.device.Scan(nil, false)
-		return
-	default:
-		ring.device.StopScanning()
+func (ring *_BLERing) PulseColor(r, g, b byte) error {
+	if ring.client == nil {
+		return nil
 	}
+
+	err := ring.client.WriteCharacteristic(ring.colorCharacteristic, []byte{r, g, b}, false)
+	if err != nil {
+		return err
+	}
+
+	return ring.client.WriteCharacteristic(ring.commandCharacteristic, []byte{1}, false)
+}
+
+func (ring *_BLERing) SetColor(r, g, b byte) error {
+	if ring.client == nil {
+		return nil
+	}
+
+	err := ring.client.WriteCharacteristic(ring.colorCharacteristic, []byte{r, g, b}, false)
+	if err != nil {
+		return err
+	}
+
+	return ring.client.WriteCharacteristic(ring.commandCharacteristic, []byte{0}, false)
+}
+
+func (ring *_BLERing) localNameFilter(a ble.Advertisement) bool {
+	debug("Found BLE Device %v", a.LocalName())
+	return strings.ToUpper(a.LocalName()) == strings.ToUpper(ring.localName)
 }
